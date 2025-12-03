@@ -12,7 +12,7 @@ def make_smoothie(preset):
     if preset == 1:
         st.session_state.msg = ""
         st.session_state.status = "Waiting for next selection"
-        st.session_state.msg = "Berry Orchard Blend ready!"
+        st.session_state.msg = "Kiwi Berry Splash ready!"
     elif preset == 2:
         st.session_state.msg = ""
         st.session_state.status = "Waiting for next selection"
@@ -20,7 +20,7 @@ def make_smoothie(preset):
     elif preset == 3:
         st.session_state.msg = ""
         st.session_state.status = "Waiting for next selection"
-        st.session_state.msg = "Sunrise Vitality Mix ready!"
+        st.session_state.msg = "Carrot Kiwi Citrus Mix ready!"
     
 
 st.title("Welcome to the Robotic Juice maker!")
@@ -29,9 +29,9 @@ st.header("Choose a juice from our selection")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    if st.button("Berry Orchard Blend"):
+    if st.button("Kiwi Berry Splash"):
         make_smoothie(1)
-    st.text("Ingredients: 🍓 + 🍏 + 🍇")
+    st.text("Ingredients: 🥝 + 🍓 + 🍏")
 
 with col2:
     if st.button("Garden Duo Juice"):
@@ -39,9 +39,9 @@ with col2:
     st.text("Ingredients: 🍅 + 🥕")
 
 with col3:
-    if st.button("Sunrise Vitality Mix"):
+    if st.button("Carrot Kiwi Citrus Mix"):
         make_smoothie(3)
-    st.text("Ingredients: 🥕 + 🍋 + 🍓")
+    st.text("Ingredients: 🥕 + 🥝 + 🍋")
 
 st.text(st.session_state.status)
 if st.session_state.msg!="":
