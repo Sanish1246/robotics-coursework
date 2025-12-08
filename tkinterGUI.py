@@ -43,7 +43,7 @@ class JuiceMakerApp:
         # Juice options
         juices = [
             ("Kiwi Berry Splash", "Kiwi\n Strawberry\n Green apple", 1),
-            ("Garden Duo Juice", "Tomato\n  Carrot", 2),
+            ("Garden Duo Juice", "Tomato\n Carrot\n", 2),
             ("Carrot Kiwi Citrus Mix", "Carrot\n Kiwi\n Lemon", 3)
         ]
         
