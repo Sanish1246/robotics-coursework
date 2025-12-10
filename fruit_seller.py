@@ -12,6 +12,9 @@ from Arm_Lib import Arm_Device
 if "emergency_stop" not in st.session_state:
     st.session_state.emergency_stop = False
 
+if "items" not in st.session_state:
+    st.session_state.items=[]
+
 def emergency_stop():
     st.session_state.emergency_stop = True
     try:
@@ -167,47 +170,51 @@ def get_camera():
 
 
 
-def search_ingredient(ingredient):
+def search_items(items):
     camera = get_camera()
-
+    picked = [False]*6
     missing = False
 
-
-    if st.session_state.emergency_stop:
-        st.session_state.status = "Emergency stop activated!"
-        arm_move(p_mould, 1000)
-        return True
-    st.session_state.status ="Searched for:",ingredient
-    found = False
-
-    for i in range(len(top_positions)):
+    for item in items:
         if st.session_state.emergency_stop:
             st.session_state.status = "Emergency stop activated!"
             arm_move(p_mould, 1000)
             return True
-        arm_move(top_positions[i], 2000)
-        time.sleep(1)
+        st.session_state.status ="Searched for:",item
+        print("Looking for:", item)
+        found = False
 
-    
-        arm_move(photo_positions[i], 1000)
-        time.sleep(0.2)
+        for i in range(len(top_positions)):
+            if st.session_state.emergency_stop:
+                st.session_state.status = "Emergency stop activated!"
+                arm_move(p_mould, 1000)
+                return True
+            arm_move(top_positions[i], 2000)
+            time.sleep(1)
 
-        flush_camera(camera)
-        labels = detect_one_frame(camera)
-        frame = capture_frame(camera, save=True)  
+            if not picked[i]:
+                arm_move(photo_positions[i], 1000)
+                time.sleep(0.2)
 
-        if ingredient in labels:
-            arm_move(top_positions[i], 1000)
-            arm_move(bottom_positions[i], 1000)
-            arm_clamp_block(ingredient)
-            arm_move(top_positions[i], 1000)
-            arm_move(p_Mixer, 1500)
-            arm_clamp_block("Drop")
-            found = True
+                flush_camera(camera)
+                labels = detect_one_frame(camera)
+                frame = capture_frame(camera, save=True)  
+
+                if item in labels:
+                    picked[i] = True
+                    arm_move(top_positions[i], 1000)
+                    arm_move(bottom_positions[i], 1000)
+                    arm_clamp_block(item)
+                    arm_move(top_positions[i], 1000)
+                    arm_move(p_Mixer, 1500)
+                    arm_clamp_block("Drop")
+                    found = True
+                    break
+
+        if not found:
+            missing = True
+            arm_move(p_mould, 1000)
             break
-
-    if not found:
-        missing = True
 
     arm_move(p_mould, 1000)
     return missing
@@ -217,11 +224,11 @@ if "msg" not in st.session_state:
     st.session_state.msg = ""
 
 
-def prepare_search(ingredient):
+def prepare_search(items):
     st.session_state.emergency_stop = False
     msg = "Item found!"
 
-    missing = search_ingredient(ingredient)
+    missing = search_items(st.session_state.items)
     st.session_state.status = "Waiting for next selection"
     if not missing and not st.session_state.emergency_stop:
         st.session_state.msg = msg
@@ -230,21 +237,24 @@ def prepare_search(ingredient):
 st.title("Robobazaar")
 st.header("Choose a fruit/vegetable")
 
-col1, col2, col3 ,col4,col5,col6,col7= st.columns(7)
+col1, col2, col3 ,col4,col5,col6,col7,col8= st.columns(8)
 if col1.button("Green apple"):
-    prepare_search("green apple")
+    st.session_state.items.append("green apple")
 if col2.button("Kiwi"):
-    prepare_search("kiwi")
+    st.session_state.items.append("kiwi")
 if col3.button("Tomato"):
-    prepare_search("Tomato")
+    st.session_state.items.append("Tomato")
 if col4.button("Lemon"):
-    prepare_search("Lemon")
+    st.session_state.items.append("Lemon")
 if col5.button("Strawberry"):
-    prepare_search("strawberry")
+    st.session_state.items.append("strawberry")
 if col6.button("Carrot"):
-    prepare_search("carrot")
+    st.session_state.items.append("carrot")
 
-if col7.button("EMERGENCY STOP"):
+if col7.button("Search"):
+    prepare_search(st.session_state.items)
+
+if col8.button("EMERGENCY STOP"):
     emergency_stop()
 
 if st.session_state.msg:
