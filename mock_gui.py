@@ -496,7 +496,7 @@ def search_items():
 
 def prepare_search():
     st.session_state.emergency_stop = False
-    msg = "Item found!"
+    msg = "Item has been added to basket!"
     print(st.session_state.order_items)
 
     missing = search_items()
@@ -505,7 +505,7 @@ def prepare_search():
         st.session_state.msg = msg
 
 st.title("Robobazaar")
-st.header("Choose a Fruit/Vegetable")
+st.header("Choose Your Veggies & Fruits")
 
 col1, col2, col3 = st.columns(3)
 if col1.button("Green Apple"):
