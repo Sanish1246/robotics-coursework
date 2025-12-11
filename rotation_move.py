@@ -6,10 +6,12 @@ from datetime import datetime
 import os
 import time
 from Arm_Lib import Arm_Device
+from collections import Counter
+
 
 retro_css = """
 <style>
-/* CSS Variables */
+/* CSS styling*/
 :root {
     --teal: #3E6868;
     --red: #C94E44;
@@ -19,7 +21,6 @@ retro_css = """
     --cream: #FBFBFA;
 }
 
-/*Base resets*/
 .stApp {
     background-color: var(--black-bg) !important;
     background-image: 
@@ -32,7 +33,7 @@ retro_css = """
         );
 }
 
-/*Typography styles */
+/* Fonts */
 h1, h2, h3, h4, h5, h6 {
     color: var(--cream) !important;
     font-family: 'Courier New', monospace !important;
@@ -69,7 +70,7 @@ p, .stMarkdown, div[data-testid="stMarkdownContainer"] p {
     line-height: 1.6 !important;
 }
 
-/* Styling for the option buttons*/
+/* Item buttons */
 div.stButton > button {
     background: linear-gradient(135deg, var(--teal) 0%, var(--dark-accent) 100%) !important;
     color: var(--cream) !important;
@@ -106,19 +107,19 @@ div.stButton > button:active {
 }
 
 /* Search button */
-button[kind="primary"],
-div.stButton > button[kind="primary"] {
+button[kind="secondary"],
+div.stButton > button[kind="secondary"] {
     background: linear-gradient(135deg, var(--red) 0%, #8B3A32 100%) !important;
     border: 3px solid var(--tan) !important;
     color: var(--cream) !important;
 }
 
-button[kind="primary"]:hover,
-div.stButton > button[kind="primary"]:hover {
+button[kind="secondary"]:hover,
+div.stButton > button[kind="secondary"]:hover {
     background: linear-gradient(135deg, var(--red) 30%, var(--tan) 100%) !important;
 }
 
-/* Emergency stop */
+/* Emergency stop button*/
 button[kind="secondary"],
 div.stButton > button[kind="secondary"] {
     background: linear-gradient(135deg, #8B0000 0%, var(--red) 100%) !important;
@@ -129,8 +130,8 @@ div.stButton > button[kind="secondary"] {
     font-weight: 900 !important;
 }
 
-button[kind="secondary"]:hover,
-div.stButton > button[kind="secondary"]:hover {
+button[kind="primary"]:hover,
+div.stButton > button[kind="primary"]:hover {
     background: linear-gradient(135deg, #8B0000 0%, var(--red) 100%) !important;
 }
 
@@ -143,7 +144,6 @@ div.stButton > button[kind="secondary"]:hover {
     }
 }
 
-/* Containers and blocks */
 .block-container {
     padding: 2rem 3rem !important;
     max-width: 1400px !important;
@@ -172,7 +172,7 @@ img:hover {
     transform: scale(1.02) !important;
 }
 
-/* Info messages */
+/* Info messages*/
 div[data-testid="stNotification"] {
     border-radius: 10px !important;
     font-family: 'Courier New', monospace !important;
@@ -195,7 +195,6 @@ div[data-testid="stNotification"] {
     box-shadow: 4px 4px 0px rgba(62, 104, 104, 0.6) !important;
 }
 
-
 div[data-testid="column"] {
     padding: 0.5rem !important;
 }
@@ -212,7 +211,7 @@ div[data-testid="column"] {
     margin: 0.5rem 0 !important;
 }
 
-/* Captions*/
+/* captions */
 .stImage > div > div,
 figcaption {
     color: var(--cream) !important;
@@ -242,10 +241,10 @@ figcaption {
     background: var(--tan);
 }
 
-/* Retro effect*/
+/* Retro effect */
 .stApp::before {
     content: '';
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -264,7 +263,7 @@ figcaption {
 /* Vignette effect*/
 .stApp::after {
     content: '';
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -307,22 +306,20 @@ if "nextIng" not in st.session_state:
 if "msg" not in st.session_state:
     st.session_state.msg = ""
 
-if "live_container" not in st.session_state:
-    st.session_state.live_container = st.empty()
-
 if "image_placeholder" not in st.session_state:
     st.session_state.image_placeholder = st.empty()
 
-# Function to stop the robot at any time
+#Function to stop robot operation at any time outside the search
 def emergency_stop():
     st.session_state.emergency_stop = True
+    st.session_state.order_items = []  
     try:
         arm_clamp_block("Drop")
         arm_move(p_mould, 1000)
     except:
-        pass 
+        pass
 
-# Function to find the camera at different indexes
+#Function to locate the camera by searching at different indexes
 def find_camera(max_index=5):
     for i in range(max_index):
         cam = cv.VideoCapture(i)
@@ -337,26 +334,29 @@ if st.session_state.camera is None:
     if cam is not None:
         st.session_state.camera = cam
 
-#Initializing the robot
 Arm = Arm_Device()
 time.sleep(.1)
 
-# Fixed servo 6 values for different cases
+def arm_rotate_servo5(angle):
+    Arm.Arm_serial_servo_write(6, angle, 400)
+    time.sleep(.5)
+
+# Function to change servo 6 values depending on the situation
 def arm_clamp_block(enable):
     mapping = {
         "Drop": 15,
         "Tomato": 112,
-        "Lemon": 95,
+        "Lemon": 98,
         "carrot": 145,
         "green apple": 81,
         "kiwi": 100,
-        "strawberry": 124
+        "strawberry": 137
     }
     if enable in mapping:
         Arm.Arm_serial_servo_write(6, mapping[enable], 400)
     time.sleep(.5)
 
-# Function to map the movements of individual servos 1 to 5
+# Function to move servos 1 to 5
 def arm_move(p, s_time=500):
     for i in range(5):
         sid = i + 1
@@ -370,14 +370,17 @@ p_mould = [90, 130, 0, 0, 90]
 top_positions = [[180,63,52,0,90],[146,63,52,0,90],[117,63,52,0,90],[82,63,52,0,90],[50,63,52,0,90],[91,106,0,0,90]]
 photo_positions = [[180,63,52,0,90],[150,63,52,0,90],[120,63,52,0,90],[86,63,52,0,90],[53,63,52,0,90],[95,106,0,0,90]]
 bottom_positions = [[180,43,58,27,90],[146,43,58,27,90],[112,43,58,27,90],[82,43,58,27,90],[50,43,58,27,90],[91,56,40,3,90]]
-p_Mixer = [0, 130, 20, 40, 270]
+p_basket = [0, 143, 20, 40, 270]
+p_basket_bottom=[0, 80, 58, 27, 270]
 
 # Initialize arm position
 arm_clamp_block("Drop")
 arm_move(p_mould, 1000)
 time.sleep(1)
 
+# Load model
 model = YOLO('best.pt', task='detect')
+
 
 def vegetable(frame):
     results = model(frame)
@@ -397,6 +400,7 @@ def vegetable(frame):
             output.append((label, conf, (x1,y1,x2,y2)))
     return output
 
+#Function to run object detection on a captured image
 def detect(frame, draw_boxes=True):
     frame_resized = cv.resize(frame, (640,640))
     detections = vegetable(frame_resized)
@@ -410,6 +414,7 @@ def detect(frame, draw_boxes=True):
 
     return labels, frame_resized
 
+# Function to capture and save an image
 def capture_frame(camera, save=True, save_dir="captures"):
     ret, frame = camera.read()
     if not ret or frame is None:
@@ -417,11 +422,13 @@ def capture_frame(camera, save=True, save_dir="captures"):
 
     labels, frame_with_boxes = detect(frame, draw_boxes=True)
 
+    # Updating the container that displays detected images
     with st.session_state.live_container.container():
         st.text(st.session_state.status)
         st.image(frame_with_boxes, channels="BGR", caption="Live Detection")
         st.write(f"**Last detection:** {st.session_state.label} - **Confidence:** {st.session_state.conf:.2f}")
 
+    #  Saving the image
     if save:
         os.makedirs(save_dir, exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -432,14 +439,27 @@ def capture_frame(camera, save=True, save_dir="captures"):
     return frame_with_boxes
 
 def detect_one_frame(camera):
+    """Detect objects and return full detection info including bounding boxes"""
     ret, frame = camera.read()
     if not ret:
         camera.release()
         st.session_state.camera = find_camera()
         ret, frame = st.session_state.camera.read()
-    labels, _ = detect(frame, draw_boxes=True)
-    return labels
+    
+    # Get raw detections without drawing
+    results = model(frame)
+    detections = results[0].boxes
+    output = []
+    if len(detections) > 0:
+        for box in detections:
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            conf = float(box.conf[0])
+            label = model.names[int(box.cls[0])]
+            if label in ["Tomato", "Lemon", "carrot", "kiwi", "green apple", "strawberry"]:
+                output.append((label, conf, (x1, y1, x2, y2)))
+    return output
 
+# Function to free up the camera
 def flush_camera(camera, frames=5):
     for _ in range(frames):
         camera.read()
@@ -447,27 +467,37 @@ def flush_camera(camera, frames=5):
 def get_camera():
     return st.session_state.camera
 
+
 def search_items():
     camera = get_camera()
-    picked = [False]*6
+    picked = [False] * 6
+
+    # Using counter to allow duplicates, instead of set
+    order_counter = Counter(st.session_state.order_items)
     missing = False
 
-    for item in st.session_state.order_items:
+    # Continue until all required items are picked
+    while sum(order_counter.values()) > 0:
+
         if st.session_state.emergency_stop:
             st.session_state.status = "Emergency stop activated!"
             st.session_state.order_items = []
+            order_counter.clear()  
             arm_move(p_mould, 1000)
             return True
-        st.session_state.status = f"Searched for: {item}"
-        print("Looking for:", item)
-        found = False
 
+        item_found_this_cycle = False
+
+        # Go through all fixed positions on the table
         for i in range(len(top_positions)):
+
             if st.session_state.emergency_stop:
                 st.session_state.status = "Emergency stop activated!"
                 st.session_state.order_items = []
+                order_counter.clear()  
                 arm_move(p_mould, 1000)
                 return True
+
             arm_move(top_positions[i], 2000)
             time.sleep(1)
 
@@ -476,36 +506,71 @@ def search_items():
                 time.sleep(0.2)
 
                 flush_camera(camera)
-                labels = detect_one_frame(camera)
-                frame = capture_frame(camera, save=True)  
+                # Get full detection info including bounding boxes
+                detections = detect_one_frame(camera)
+                capture_frame(camera, save=True)
 
-                if item in labels:
-                    picked[i] = True
-                    arm_move(top_positions[i], 1000)
-                    arm_move(bottom_positions[i], 1000)
-                    arm_clamp_block(item)
-                    arm_move(top_positions[i], 1000)
-                    arm_move(p_Mixer, 1500)
-                    arm_clamp_block("Drop")
-                    found = True
-                    break
+                # Check all detected items
+                for detection in detections:
+                    label, conf, (x1, y1, x2, y2) = detection
+                    
+                    if order_counter.get(label, 0) > 0:
+                        # Calculate bounding box dimensions
+                        width = x2 - x1
+                        height = y2 - y1
 
-        if not found:
-            st.session_state.msg = "Not found!"
-        
+                        st.session_state.status = f"Last Item Picked: {label}"
+                        picked[i] = True
+                        order_counter[label] -= 1
+
+                        # Execute pickup sequence
+                        arm_move(top_positions[i], 1000)
+                        arm_move(bottom_positions[i], 1000)
+
+                        # NEW: Check if object is wider than tall
+                        if width > height:
+                            # Rotate gripper 90 degrees for wide objects
+                            arm_rotate_servo6(90)  # Rotate before clamping
+                            time.sleep(0.3)  # Brief pause after rotation
+
+                        # Clamp the object with item-specific grip width
+                        arm_clamp_block(label)
+
+                        # Continue with pickup motion
+                        arm_move(top_positions[i], 1000)
+                        arm_move(p_basket, 1500)
+                        arm_move(p_basket_bottom, 1500)
+                        arm_clamp_block("Drop")
+
+                        item_found_this_cycle = True
+                        break
+
+            if item_found_this_cycle:
+                break
+
+        if not item_found_this_cycle:
+            st.session_state.msg = "Item not found!"
+            missing = True
+            break
+
+    # Return to mould when done
     arm_move(p_mould, 1000)
     st.session_state.order_items = []
+
     return missing
 
-def prepare_search():
-    st.session_state.emergency_stop = False
-    msg = "Item has been added to basket!"
-    print(st.session_state.order_items)
 
-    missing = search_items()
-    st.session_state.status = "Waiting for next selection"
-    if not missing and not st.session_state.emergency_stop:
-        st.session_state.msg = msg
+def prepare_search():
+    # Startng to search only with at least 1 item present in the basket
+    if st.session_state.order_items!=[]:
+        st.session_state.emergency_stop = False
+        msg = "Item has been added to basket!"
+        print(st.session_state.order_items)
+
+        missing = search_items()
+        st.session_state.status = "Waiting for next selection"
+        if not missing and not st.session_state.emergency_stop:
+            st.session_state.msg = msg
 
 st.title("Robobazaar")
 st.header("Choose Your Veggies & Fruits")
@@ -527,25 +592,30 @@ if col6.button("Carrot"):
     st.session_state.order_items.append("carrot")
 
 col7, col8, col9 = st.columns(3)
-if col7.button("Search", type="primary"):
+if col7.button("Search", type="secondary"):
     prepare_search()
 with col8:
     st.write("") 
-if col9.button("EMERGENCY STOP", type="secondary"):
+if col9.button("EMERGENCY STOP", type="primary"):
     emergency_stop()
+if "live_container" not in st.session_state:
+    st.session_state.live_container = st.empty()
 
 if st.session_state.msg:
     st.success(st.session_state.msg)
 
-st.subheader("Live Camera Capture")
+st.subheader("Live Detection")
 
-with st.session_state.live_container.container():
-    st.info("Waiting for camera feed...")
-
+if "image_placeholder" not in st.session_state:
+    st.session_state.image_placeholder = st.empty()
 st.text("Last detection")
+
+# Displaying last captured image only if 1 is present
 if st.session_state.last_capture and os.path.exists(st.session_state.last_capture):
-    img = Image.open(st.session_state.last_capture)
-    st.image(img, width=300, caption="Latest Capture")
+    with st.session_state.live_container.container():
+        img = Image.open(st.session_state.last_capture)
+        st.image(img, width=300, caption="Latest Capture")
+        st.write(f"**Last detection:** {st.session_state.label} - **Confidence:** {st.session_state.conf:.2f}")
 else:
     st.info("No image detected yet.")
 

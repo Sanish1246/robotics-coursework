@@ -11,7 +11,7 @@ from collections import Counter
 
 retro_css = """
 <style>
-/* ========== CSS VARIABLES ========== */
+/* CSS styling*/
 :root {
     --teal: #3E6868;
     --red: #C94E44;
@@ -21,7 +21,6 @@ retro_css = """
     --cream: #FBFBFA;
 }
 
-/* ========== BASE RESETS ========== */
 .stApp {
     background-color: var(--black-bg) !important;
     background-image: 
@@ -34,7 +33,7 @@ retro_css = """
         );
 }
 
-/* ========== TYPOGRAPHY ========== */
+/* Fonts */
 h1, h2, h3, h4, h5, h6 {
     color: var(--cream) !important;
     font-family: 'Courier New', monospace !important;
@@ -71,7 +70,7 @@ p, .stMarkdown, div[data-testid="stMarkdownContainer"] p {
     line-height: 1.6 !important;
 }
 
-/* ========== DEFAULT BUTTON STYLES (FRUIT BUTTONS) ========== */
+/* Item buttons */
 div.stButton > button {
     background: linear-gradient(135deg, var(--teal) 0%, var(--dark-accent) 100%) !important;
     color: var(--cream) !important;
@@ -107,7 +106,7 @@ div.stButton > button:active {
         inset 0 2px 8px rgba(0,0,0,0.4) !important;
 }
 
-/* ========== SEARCH BUTTON - RED STYLING ========== */
+/* Search button */
 button[kind="secondary"],
 div.stButton > button[kind="secondary"] {
     background: linear-gradient(135deg, var(--red) 0%, #8B3A32 100%) !important;
@@ -120,7 +119,7 @@ div.stButton > button[kind="secondary"]:hover {
     background: linear-gradient(135deg, var(--red) 30%, var(--tan) 100%) !important;
 }
 
-/* ========== EMERGENCY STOP BUTTON - DARK RED WITH PULSE ========== */
+/* Emergency stop button*/
 button[kind="secondary"],
 div.stButton > button[kind="secondary"] {
     background: linear-gradient(135deg, #8B0000 0%, var(--red) 100%) !important;
@@ -145,7 +144,6 @@ div.stButton > button[kind="primary"]:hover {
     }
 }
 
-/* ========== CONTAINERS & BLOCKS ========== */
 .block-container {
     padding: 2rem 3rem !important;
     max-width: 1400px !important;
@@ -163,7 +161,6 @@ div[data-testid="stVerticalBlock"] > div:has(.stImage) {
         inset 0 0 20px rgba(62, 104, 104, 0.1) !important;
 }
 
-/* ========== IMAGES ========== */
 img {
     border: 4px solid var(--tan) !important;
     border-radius: 12px !important;
@@ -175,7 +172,7 @@ img:hover {
     transform: scale(1.02) !important;
 }
 
-/* ========== SUCCESS/INFO MESSAGES ========== */
+/* Info messages*/
 div[data-testid="stNotification"] {
     border-radius: 10px !important;
     font-family: 'Courier New', monospace !important;
@@ -198,12 +195,10 @@ div[data-testid="stNotification"] {
     box-shadow: 4px 4px 0px rgba(62, 104, 104, 0.6) !important;
 }
 
-/* ========== COLUMNS ========== */
 div[data-testid="column"] {
     padding: 0.5rem !important;
 }
 
-/* ========== TEXT ELEMENTS ========== */
 .stText, div[data-testid="stText"] {
     background: var(--tan) !important;
     color: var(--dark-accent) !important;
@@ -216,7 +211,7 @@ div[data-testid="column"] {
     margin: 0.5rem 0 !important;
 }
 
-/* ========== CAPTIONS ========== */
+/* captions */
 .stImage > div > div,
 figcaption {
     color: var(--cream) !important;
@@ -226,7 +221,6 @@ figcaption {
     opacity: 0.85;
 }
 
-/* ========== SCROLLBAR ========== */
 ::-webkit-scrollbar {
     width: 12px;
     background: var(--black-bg);
@@ -247,7 +241,7 @@ figcaption {
     background: var(--tan);
 }
 
-/* ========== RETRO SCAN LINES ========== */
+/* Retro effect */
 .stApp::before {
     content: '';
     position: absolute;
@@ -266,7 +260,7 @@ figcaption {
     z-index: 9999;
 }
 
-/* ========== VIGNETTE EFFECT ========== */
+/* Vignette effect*/
 .stApp::after {
     content: '';
     position: absolute;
@@ -282,6 +276,8 @@ figcaption {
 """
 
 st.markdown(retro_css, unsafe_allow_html=True)
+
+# Global variables
 
 if "emergency_stop" not in st.session_state:
     st.session_state.emergency_stop = False
@@ -310,12 +306,10 @@ if "nextIng" not in st.session_state:
 if "msg" not in st.session_state:
     st.session_state.msg = ""
 
-
-
 if "image_placeholder" not in st.session_state:
     st.session_state.image_placeholder = st.empty()
 
-
+#Function to stop robot operation at any time outside the search
 def emergency_stop():
     st.session_state.emergency_stop = True
     st.session_state.order_items = []  
@@ -325,6 +319,7 @@ def emergency_stop():
     except:
         pass
 
+#Function to locate the camera by searching at different indexes
 def find_camera(max_index=5):
     for i in range(max_index):
         cam = cv.VideoCapture(i)
@@ -342,6 +337,7 @@ if st.session_state.camera is None:
 Arm = Arm_Device()
 time.sleep(.1)
 
+# Function to change servo 6 values depending on the situation
 def arm_clamp_block(enable):
     mapping = {
         "Drop": 15,
@@ -356,6 +352,7 @@ def arm_clamp_block(enable):
         Arm.Arm_serial_servo_write(6, mapping[enable], 400)
     time.sleep(.5)
 
+# Function to move servos 1 to 5
 def arm_move(p, s_time=500):
     for i in range(5):
         sid = i + 1
@@ -369,7 +366,7 @@ p_mould = [90, 130, 0, 0, 90]
 top_positions = [[180,63,52,0,90],[146,63,52,0,90],[117,63,52,0,90],[82,63,52,0,90],[50,63,52,0,90],[91,106,0,0,90]]
 photo_positions = [[180,63,52,0,90],[150,63,52,0,90],[120,63,52,0,90],[86,63,52,0,90],[53,63,52,0,90],[95,106,0,0,90]]
 bottom_positions = [[180,43,58,27,90],[146,43,58,27,90],[112,43,58,27,90],[82,43,58,27,90],[50,43,58,27,90],[91,56,40,3,90]]
-p_Mixer = [0, 143, 20, 40, 270]
+p_basket = [0, 143, 20, 40, 270]
 p_basket_bottom=[0, 80, 58, 27, 270]
 
 # Initialize arm position
@@ -377,7 +374,9 @@ arm_clamp_block("Drop")
 arm_move(p_mould, 1000)
 time.sleep(1)
 
+# Load model
 model = YOLO('best.pt', task='detect')
+
 
 def vegetable(frame):
     results = model(frame)
@@ -397,6 +396,7 @@ def vegetable(frame):
             output.append((label, conf, (x1,y1,x2,y2)))
     return output
 
+#Function to run object detection on a captured image
 def detect(frame, draw_boxes=True):
     frame_resized = cv.resize(frame, (640,640))
     detections = vegetable(frame_resized)
@@ -410,6 +410,7 @@ def detect(frame, draw_boxes=True):
 
     return labels, frame_resized
 
+# Function to capture and save an image
 def capture_frame(camera, save=True, save_dir="captures"):
     ret, frame = camera.read()
     if not ret or frame is None:
@@ -417,11 +418,13 @@ def capture_frame(camera, save=True, save_dir="captures"):
 
     labels, frame_with_boxes = detect(frame, draw_boxes=True)
 
+    # Updating the container that displays detected images
     with st.session_state.live_container.container():
         st.text(st.session_state.status)
         st.image(frame_with_boxes, channels="BGR", caption="Live Detection")
         st.write(f"**Last detection:** {st.session_state.label} - **Confidence:** {st.session_state.conf:.2f}")
 
+    #  Saving the image
     if save:
         os.makedirs(save_dir, exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -440,6 +443,7 @@ def detect_one_frame(camera):
     labels, _ = detect(frame, draw_boxes=True)
     return labels
 
+# Function to free up the camera
 def flush_camera(camera, frames=5):
     for _ in range(frames):
         camera.read()
@@ -448,13 +452,11 @@ def get_camera():
     return st.session_state.camera
 
 
-
-
 def search_items():
     camera = get_camera()
     picked = [False] * 6
 
-    # Use Counter to allow duplicates
+    # Using counter to allow duplicates, instead of set
     order_counter = Counter(st.session_state.order_items)
     missing = False
 
@@ -470,7 +472,7 @@ def search_items():
 
         item_found_this_cycle = False
 
-        # Go through all positions on the table
+        # Go through all fixed positions on the table
         for i in range(len(top_positions)):
 
             if st.session_state.emergency_stop:
@@ -507,7 +509,7 @@ def search_items():
                         arm_move(bottom_positions[i], 1000)
                         arm_clamp_block(detected)
                         arm_move(top_positions[i], 1000)
-                        arm_move(p_Mixer, 1500)
+                        arm_move(p_basket, 1500)
                         arm_move(p_basket_bottom, 1500)
                         arm_clamp_block("Drop")
 
@@ -531,6 +533,7 @@ def search_items():
 
 
 def prepare_search():
+    # Startng to search only with at least 1 item present in the basket
     if st.session_state.order_items!=[]:
         st.session_state.emergency_stop = False
         msg = "Item has been added to basket!"
@@ -578,6 +581,8 @@ st.subheader("Live Detection")
 if "image_placeholder" not in st.session_state:
     st.session_state.image_placeholder = st.empty()
 st.text("Last detection")
+
+# Displaying last captured image only if 1 is present
 if st.session_state.last_capture and os.path.exists(st.session_state.last_capture):
     with st.session_state.live_container.container():
         img = Image.open(st.session_state.last_capture)
