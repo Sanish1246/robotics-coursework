@@ -12,8 +12,8 @@ from Arm_Lib import Arm_Device
 if "emergency_stop" not in st.session_state:
     st.session_state.emergency_stop = False
 
-if "items" not in st.session_state:
-    st.session_state.items=[]
+if "order_items" not in st.session_state:
+    st.session_state.order_items = []
 
 def emergency_stop():
     st.session_state.emergency_stop = True
@@ -62,12 +62,12 @@ time.sleep(.1)
 def arm_clamp_block(enable):
     mapping = {
         "Drop": 15,
-        "Tomato": 116,
-        "Lemon": 90,
-        "carrot": 144,
+        "Tomato": 112,
+        "Lemon": 95,
+        "carrot": 145,
         "green apple": 81,
         "kiwi": 100,
-        "strawberry": 122
+        "strawberry": 124
     }
     if enable in mapping:
         Arm.Arm_serial_servo_write(6, mapping[enable], 400)
@@ -170,14 +170,15 @@ def get_camera():
 
 
 
-def search_items(items):
+def search_items():
     camera = get_camera()
     picked = [False]*6
     missing = False
 
-    for item in items:
+    for item in st.session_state.order_items:
         if st.session_state.emergency_stop:
             st.session_state.status = "Emergency stop activated!"
+            st.session.state.order_items=[]
             arm_move(p_mould, 1000)
             return True
         st.session_state.status ="Searched for:",item
@@ -187,6 +188,7 @@ def search_items(items):
         for i in range(len(top_positions)):
             if st.session_state.emergency_stop:
                 st.session_state.status = "Emergency stop activated!"
+                st.session.state.order_items=[]
                 arm_move(p_mould, 1000)
                 return True
             arm_move(top_positions[i], 2000)
@@ -217,6 +219,7 @@ def search_items(items):
             break
 
     arm_move(p_mould, 1000)
+    st.session_state.order_items=[]
     return missing
 
 
@@ -224,11 +227,12 @@ if "msg" not in st.session_state:
     st.session_state.msg = ""
 
 
-def prepare_search(items):
+def prepare_search():
     st.session_state.emergency_stop = False
     msg = "Item found!"
+    print(st.session_state.order_items)
 
-    missing = search_items(st.session_state.items)
+    missing = search_items()
     st.session_state.status = "Waiting for next selection"
     if not missing and not st.session_state.emergency_stop:
         st.session_state.msg = msg
@@ -239,20 +243,20 @@ st.header("Choose a fruit/vegetable")
 
 col1, col2, col3 ,col4,col5,col6,col7,col8= st.columns(8)
 if col1.button("Green apple"):
-    st.session_state.items.append("green apple")
+    st.session_state.order_items.append("green apple")
 if col2.button("Kiwi"):
-    st.session_state.items.append("kiwi")
+    st.session_state.order_items.append("kiwi")
 if col3.button("Tomato"):
-    st.session_state.items.append("Tomato")
+    st.session_state.order_items.append("Tomato")
 if col4.button("Lemon"):
-    st.session_state.items.append("Lemon")
+    st.session_state.order_items.append("Lemon")
 if col5.button("Strawberry"):
-    st.session_state.items.append("strawberry")
+    st.session_state.order_items.append("strawberry")
 if col6.button("Carrot"):
-    st.session_state.items.append("carrot")
+    st.session_state.order_items.append("carrot")
 
 if col7.button("Search"):
-    prepare_search(st.session_state.items)
+    prepare_search()
 
 if col8.button("EMERGENCY STOP"):
     emergency_stop()
