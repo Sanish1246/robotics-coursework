@@ -7,222 +7,252 @@ import os
 import time
 from Arm_Lib import Arm_Device
 
-st.markdown("""
+
+retro_css = """
 <style>
-    /* Import font for better aesthetics */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-    
-    /* Color palette */
-    :root {
-        --teal: #3E6868;
-        --red: #C94E44;
-        --tan: #C1AB85;
-        --black-bg: #1A1A1A;
-        --dark-accent: #3D413A;
-        --cream: #FBFBFA;
-    }
-    
-    /* Main app background */
-    .stApp {
-        background-color: #1A1A1A;
-        color: #FBFBFA;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    /* Center main content */
-    .main .block-container {
-        max-width: 1200px;
-        padding-left: 2rem;
-        padding-right: 2rem;
-        margin: 0 auto;
-    }
-    
-    /* Header styling */
-    h1 {
-        color: #FBFBFA !important;
-        font-weight: 800 !important;
-        font-size: 2.5rem !important;
-        margin-bottom: 0.5rem !important;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        text-align: center;
-    }
-    
-    h2, h3 {
-        color: #FBFBFA !important;
-        font-weight: 700 !important;
-        text-align: center;
-    }
-    
-    /* Button styling - default (teal) */
-    .stButton > button {
-        background-color: #3E6868 !important;
-        color: #FBFBFA !important;
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 1.25rem 2rem !important;
-        font-weight: 600 !important;
-        font-size: 1.1rem !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 12px rgba(62, 104, 104, 0.3) !important;
-        width: 100% !important;
-        height: 80px !important;
-    }
-    
-    .stButton > button:hover {
-        background-color: #2d4f4f !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 16px rgba(62, 104, 104, 0.4) !important;
-    }
-    
-    /* Emergency button styling - bigger and redder */
-    .emergency-button .stButton > button {
-        background: linear-gradient(135deg, #C94E44 0%, #a63d35 100%) !important;
-        box-shadow: 0 6px 20px rgba(201, 78, 68, 0.5) !important;
-        font-size: 1.5rem !important;
-        font-weight: 800 !important;
-        height: 100px !important;
-        letter-spacing: 1px !important;
-        border: 3px solid rgba(251, 251, 250, 0.2) !important;
-    }
-    
-    .emergency-button .stButton > button:hover {
-        background: linear-gradient(135deg, #a63d35 0%, #8b2f28 100%) !important;
-        box-shadow: 0 8px 24px rgba(201, 78, 68, 0.6) !important;
-        transform: translateY(-3px) scale(1.02) !important;
-    }
-    
-    /* Card styling for live detection */
-    .poster-frame {
-        background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.2));
-        border: 4px solid rgba(193, 171, 133, 0.5);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-        border-radius: 12px;
-        padding: 2rem;
-        margin: 1.5rem auto;
-        background-color: #3D413A;
-        max-width: 800px;
-    }
-    
-    /* Info boxes */
-    .stInfo, .stSuccess, .stWarning {
-        background-color: #3D413A !important;
-        border-left: 4px solid #3E6868 !important;
-        color: #FBFBFA !important;
-        border-radius: 6px !important;
-    }
-    
-    .stSuccess {
-        border-left-color: #C1AB85 !important;
-        background-color: rgba(193, 171, 133, 0.15) !important;
-    }
-    
-    /* Text elements */
-    .stMarkdown, p, label {
-        color: #FBFBFA !important;
-    }
-    
-    /* Dividers */
-    hr {
-        border-color: rgba(251, 251, 250, 0.1) !important;
-        margin: 2rem 0 !important;
-    }
-    
-    /* Image captions */
-    .stImage > div > div {
-        background-color: #3D413A;
-        border: 3px solid rgba(193, 171, 133, 0.4);
-        border-radius: 12px;
-        padding: 0.5rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    
-    /* Text styling */
-    div[data-testid="stText"] {
-        color: #FBFBFA !important;
-        font-weight: 500;
-        background-color: rgba(62, 104, 104, 0.2);
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        border-left: 3px solid #3E6868;
-    }
-    
-    /* Header bar */
-    header[data-testid="stHeader"] {
-        background-color: #3E6868 !important;
-    }
-    
-    /* Sidebar (if used) */
-    section[data-testid="stSidebar"] {
-        background-color: #3D413A !important;
-    }
-    
-    /* Column containers */
-    div[data-testid="column"] {
-        padding: 0.5rem;
-    }
-    
-    /* Detection info */
-    .detection-info {
-        background-color: rgba(62, 104, 104, 0.2);
-        border-left: 4px solid #C1AB85;
-        padding: 1rem;
-        border-radius: 6px;
-        margin: 0.5rem 0;
-        text-align: center;
-    }
-    
-    /* Button grid container */
-    .button-grid {
-        max-width: 900px;
-        margin: 2rem auto;
-    }
-    
-    /* Subtitle styling */
-    .subtitle {
-        font-size: 1.1rem;
-        color: #C1AB85;
-        font-weight: 500;
-        text-align: center;
-        margin-bottom: 1rem;
-    }
-    
-    /* Section headers */
-    .section-header {
-        text-align: center;
-        margin: 2rem 0 1rem 0;
-        font-size: 1.5rem;
-        color: #FBFBFA;
-        font-weight: 700;
-    }
+/* ========== CSS VARIABLES ========== */
+:root {
+    --teal: #3E6868;
+    --red: #C94E44;
+    --tan: #C1AB85;
+    --black-bg: #1A1A1A;
+    --dark-accent: #3D413A;
+    --cream: #FBFBFA;
+    --grain-opacity: 0.03;
+}
+
+/* ========== BASE RESETS ========== */
+.stApp {
+    background: var(--cream) !important;
+    background-image: 
+        repeating-linear-gradient(
+            0deg, 
+            transparent, 
+            transparent 2px, 
+            rgba(0,0,0,0.02) 2px, 
+            rgba(0,0,0,0.02) 4px
+        );
+}
+
+/* ========== TYPOGRAPHY ========== */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--black-bg) !important;
+    font-family: 'Courier New', monospace !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    text-shadow: 2px 2px 0px var(--tan) !important;
+}
+
+h1 {
+    font-size: 3rem !important;
+    border-bottom: 4px solid var(--teal) !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+h2 {
+    font-size: 2rem !important;
+    color: var(--dark-accent) !important;
+    border-left: 6px solid var(--red) !important;
+    padding-left: 1rem !important;
+    margin-top: 2rem !important;
+}
+
+p, .stMarkdown, .stText {
+    color: var(--dark-accent) !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+}
+
+/* ========== BUTTONS ========== */
+.stButton button {
+    background: linear-gradient(135deg, var(--teal) 0%, var(--dark-accent) 100%) !important;
+    color: var(--cream) !important;
+    border: 3px solid var(--black-bg) !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1.5rem !important;
+    font-family: 'Courier New', monospace !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    box-shadow: 
+        4px 4px 0px var(--black-bg),
+        inset 0 -2px 8px rgba(0,0,0,0.2) !important;
+    transition: all 0.15s ease !important;
+    cursor: pointer !important;
+}
+
+.stButton button:hover {
+    background: linear-gradient(135deg, var(--red) 0%, var(--tan) 100%) !important;
+    transform: translate(2px, 2px) !important;
+    box-shadow: 
+        2px 2px 0px var(--black-bg),
+        inset 0 -2px 8px rgba(0,0,0,0.3) !important;
+}
+
+.stButton button:active {
+    transform: translate(4px, 4px) !important;
+    box-shadow: 
+        0px 0px 0px var(--black-bg),
+        inset 0 2px 8px rgba(0,0,0,0.4) !important;
+}
+
+/* Emergency Stop Button Styling */
+.stButton button:last-child {
+    background: linear-gradient(135deg, var(--red) 0%, #8B0000 100%) !important;
+    border-color: var(--black-bg) !important;
+    animation: pulse-emergency 2s infinite !important;
+}
+
+@keyframes pulse-emergency {
+    0%, 100% { box-shadow: 4px 4px 0px var(--black-bg), 0 0 0 0 rgba(201, 78, 68, 0); }
+    50% { box-shadow: 4px 4px 0px var(--black-bg), 0 0 0 10px rgba(201, 78, 68, 0.3); }
+}
+
+/* ========== CONTAINERS & BLOCKS ========== */
+.block-container {
+    padding: 2rem 3rem !important;
+    max-width: 1400px !important;
+}
+
+div[data-testid="stVerticalBlock"] > div {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 2px solid var(--tan) !important;
+    border-radius: 16px !important;
+    padding: 1.5rem !important;
+    margin: 1rem 0 !important;
+    box-shadow: 
+        6px 6px 0px var(--dark-accent),
+        inset 0 0 20px rgba(62, 104, 104, 0.05) !important;
+}
+
+/* ========== IMAGES ========== */
+img {
+    border: 4px solid var(--black-bg) !important;
+    border-radius: 12px !important;
+    box-shadow: 8px 8px 0px var(--teal) !important;
+    transition: transform 0.2s ease !important;
+}
+
+img:hover {
+    transform: scale(1.02) !important;
+}
+
+/* ========== SUCCESS/INFO MESSAGES ========== */
+.stSuccess {
+    background: linear-gradient(135deg, var(--teal), var(--dark-accent)) !important;
+    color: var(--cream) !important;
+    border-left: 6px solid var(--tan) !important;
+    border-radius: 10px !important;
+    padding: 1rem 1.5rem !important;
+    font-family: 'Courier New', monospace !important;
+    font-weight: 600 !important;
+    box-shadow: 4px 4px 0px var(--black-bg) !important;
+}
+
+.stInfo {
+    background: var(--tan) !important;
+    color: var(--black-bg) !important;
+    border-left: 6px solid var(--teal) !important;
+    border-radius: 10px !important;
+    padding: 1rem 1.5rem !important;
+    font-family: 'Courier New', monospace !important;
+    box-shadow: 4px 4px 0px var(--dark-accent) !important;
+}
+
+/* ========== COLUMNS ========== */
+div[data-testid="column"] {
+    padding: 0.5rem !important;
+}
+
+/* ========== TEXT ELEMENTS ========== */
+.stText {
+    background: var(--black-bg) !important;
+    color: var(--cream) !important;
+    padding: 0.75rem 1.25rem !important;
+    border-radius: 8px !important;
+    border: 2px solid var(--teal) !important;
+    font-family: 'Courier New', monospace !important;
+    font-weight: 600 !important;
+    box-shadow: 3px 3px 0px var(--dark-accent) !important;
+    margin: 0.5rem 0 !important;
+}
+
+/* ========== CAPTIONS ========== */
+.stImage > div > div {
+    color: var(--dark-accent) !important;
+    font-family: 'Courier New', monospace !important;
+    font-style: italic !important;
+    margin-top: 0.5rem !important;
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar {
+    width: 12px;
+    background: var(--cream);
+}
+
+::-webkit-scrollbar-track {
+    background: var(--tan);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--teal);
+    border-radius: 10px;
+    border: 2px solid var(--cream);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-accent);
+}
+
+/* ========== RETRO SCAN LINES ========== */
+.stApp::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.05),
+        rgba(0, 0, 0, 0.05) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* ========== VIGNETTE EFFECT ========== */
+.stApp::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: inset 0 0 150px rgba(26, 26, 26, 0.3);
+    pointer-events: none;
+    z-index: 9998;
+}
 </style>
-""", unsafe_allow_html=True)
+"""
+
+st.markdown(retro_css, unsafe_allow_html=True)
 
 if "emergency_stop" not in st.session_state:
     st.session_state.emergency_stop = False
 
-def emergency_stop():
-    st.session_state.emergency_stop = True
-    try:
-        arm_clamp_block("Drop")
-        arm_move(p_mould, 1000)
-    except:
-        pass 
+if "items" not in st.session_state:
+    st.session_state.items = []
 
-def find_camera(max_index=5):
-    for i in range(max_index):
-        cam = cv.VideoCapture(i)
-        if cam.isOpened():
-            print(f"Camera found at index {i}")
-            return cam
-        cam.release()
-    return None  
-
-if "camera" not in st.session_state or st.session_state.camera is None:
-    cam = find_camera()
-    if cam is not None:
-        st.session_state.camera = cam
-    else:
-        st.session_state.camera = None
+if "camera" not in st.session_state:
+    st.session_state.camera = None
 
 if "status" not in st.session_state:
     st.session_state.status = "Waiting for selection"
@@ -231,12 +261,44 @@ if "last_capture" not in st.session_state:
     st.session_state.last_capture = None
 
 if "label" not in st.session_state:
-    st.session_state.label="None"
+    st.session_state.label = "None"
+
 if "conf" not in st.session_state:
-    st.session_state.conf=0
+    st.session_state.conf = 0
 
 if "nextIng" not in st.session_state:
-    st.session_state.nextIng="None"
+    st.session_state.nextIng = "None"
+
+if "msg" not in st.session_state:
+    st.session_state.msg = ""
+
+if "live_container" not in st.session_state:
+    st.session_state.live_container = st.empty()
+
+if "image_placeholder" not in st.session_state:
+    st.session_state.image_placeholder = st.empty()
+
+def emergency_stop():
+    st.session_state.emergency_stop = True
+    try:
+        arm_clamp_block("Drop")
+        arm_move(p_mould, 1000)
+    except:
+        pass
+
+def find_camera(max_index=5):
+    for i in range(max_index):
+        cam = cv.VideoCapture(i)
+        if cam.isOpened():
+            print(f"Camera found at index {i}")
+            return cam
+        cam.release()
+    return None
+
+if st.session_state.camera is None:
+    cam = find_camera()
+    if cam is not None:
+        st.session_state.camera = cam
 
 Arm = Arm_Device()
 time.sleep(.1)
@@ -263,13 +325,12 @@ def arm_move(p, s_time=500):
         time.sleep(.01)
     time.sleep(s_time/1000)
 
+# Position arrays
 p_mould = [90, 130, 0, 0, 90]
-
-top_positions=[[180,63,52,0,90],[146,63,52,0,90],[117,63,52,0,90],[82,63,52,0,90],[50,63,52,0,90],[91,106,0,0,90]]
-photo_positions=[[180,63,52,0,90],[150,63,52,0,90],[120,63,52,0,90],[86,63,52,0,90],[53,63,52,0,90],[95,106,0,0,90]]
-bottom_positions=[[180,43,58,27,90],[146,43,58,27,90],[112,43,58,27,90],[82,43,58,27,90],[50,43,58,27,90],[91,56,40,3,90]]
-
-p_Mixer=[0, 130, 20, 40, 270]
+top_positions = [[180,63,52,0,90],[146,63,52,0,90],[117,63,52,0,90],[82,63,52,0,90],[50,63,52,0,90],[91,106,0,0,90]]
+photo_positions = [[180,63,52,0,90],[150,63,52,0,90],[120,63,52,0,90],[86,63,52,0,90],[53,63,52,0,90],[95,106,0,0,90]]
+bottom_positions = [[180,43,58,27,90],[146,43,58,27,90],[112,43,58,27,90],[82,43,58,27,90],[50,43,58,27,90],[91,56,40,3,90]]
+p_Mixer = [0, 130, 20, 40, 270]
 
 arm_clamp_block("Drop")
 arm_move(p_mould, 1000)
@@ -289,9 +350,8 @@ def vegetable(frame):
         x1, y1, x2, y2 = map(int, box.xyxy[0])
         conf = float(box.conf[0])
         label = model.names[int(box.cls[0])]
-        st.session_state.label=label
-        
-        st.session_state.conf=conf
+        st.session_state.label = label
+        st.session_state.conf = conf
         if label in ["Tomato","Lemon","carrot","kiwi","green apple","strawberry"]:
             output.append((label, conf, (x1,y1,x2,y2)))
     return output
@@ -303,9 +363,9 @@ def detect(frame, draw_boxes=True):
 
     if draw_boxes:
         for label, conf, (x1,y1,x2,y2) in detections:
-            cv.rectangle(frame_resized, (x1,y1),(x2,y2),(62,104,104),3)
+            cv.rectangle(frame_resized, (x1,y1),(x2,y2),(0,255,0),2)
             cv.putText(frame_resized, f"{label} {conf:.2f}", (x1,y1-10),
-                       cv.FONT_HERSHEY_SIMPLEX, 0.7,(193,171,133),2)
+                       cv.FONT_HERSHEY_SIMPLEX, 0.6,(0,255,0),2)
 
     return labels, frame_resized
 
@@ -317,9 +377,9 @@ def capture_frame(camera, save=True, save_dir="captures"):
     labels, frame_with_boxes = detect(frame, draw_boxes=True)
 
     with st.session_state.live_container.container():
-        st.markdown(f'<div class="detection-info"><strong>Status:</strong> {st.session_state.status}</div>', unsafe_allow_html=True)
-        st.image(frame_with_boxes, channels="BGR", caption="Live Detection", use_container_width=True)
-        st.markdown(f'<div class="detection-info"><strong>Last Detection:</strong> {st.session_state.label} | <strong>Confidence:</strong> {st.session_state.conf:.2f}</div>', unsafe_allow_html=True)
+        st.text(st.session_state.status)
+        st.image(frame_with_boxes, channels="BGR", caption="Live Detection")
+        st.write(f"**Last detection:** {st.session_state.label} - **Confidence:** {st.session_state.conf:.2f}")
 
     if save:
         os.makedirs(save_dir, exist_ok=True)
@@ -346,129 +406,97 @@ def flush_camera(camera, frames=5):
 def get_camera():
     return st.session_state.camera
 
-def search_ingredient(ingredient):
+def search_items(items):
     camera = get_camera()
-
+    picked = [False]*6
     missing = False
 
-    if st.session_state.emergency_stop:
-        st.session_state.status = "Emergency stop activated!"
-        arm_move(p_mould, 1000)
-        return True
-    st.session_state.status ="Searched for:",ingredient
-    found = False
-
-    for i in range(len(top_positions)):
+    for item in items:
         if st.session_state.emergency_stop:
             st.session_state.status = "Emergency stop activated!"
             arm_move(p_mould, 1000)
             return True
-        arm_move(top_positions[i], 2000)
-        time.sleep(1)
+        st.session_state.status = f"Searched for: {item}"
+        print("Looking for:", item)
+        found = False
 
-        arm_move(photo_positions[i], 1000)
-        time.sleep(0.2)
+        for i in range(len(top_positions)):
+            if st.session_state.emergency_stop:
+                st.session_state.status = "Emergency stop activated!"
+                arm_move(p_mould, 1000)
+                return True
+            arm_move(top_positions[i], 2000)
+            time.sleep(1)
 
-        flush_camera(camera)
-        labels = detect_one_frame(camera)
-        frame = capture_frame(camera, save=True)  
+            if not picked[i]:
+                arm_move(photo_positions[i], 1000)
+                time.sleep(0.2)
 
-        if ingredient in labels:
-            arm_move(top_positions[i], 1000)
-            arm_move(bottom_positions[i], 1000)
-            arm_clamp_block(ingredient)
-            arm_move(top_positions[i], 1000)
-            arm_move(p_Mixer, 1500)
-            arm_clamp_block("Drop")
-            found = True
+                flush_camera(camera)
+                labels = detect_one_frame(camera)
+                frame = capture_frame(camera, save=True)
+
+                if item in labels:
+                    picked[i] = True
+                    arm_move(top_positions[i], 1000)
+                    arm_move(bottom_positions[i], 1000)
+                    arm_clamp_block(item)
+                    arm_move(top_positions[i], 1000)
+                    arm_move(p_Mixer, 1500)
+                    arm_clamp_block("Drop")
+                    found = True
+                    break
+
+        if not found:
+            missing = True
+            arm_move(p_mould, 1000)
             break
-
-    if not found:
-        missing = True
 
     arm_move(p_mould, 1000)
     return missing
 
-if "msg" not in st.session_state:
-    st.session_state.msg = ""
-
-def prepare_search(ingredient):
+def prepare_search(items):
     st.session_state.emergency_stop = False
-    msg = "Item found!"
-
-    missing = search_ingredient(ingredient)
+    msg = "Item added to basket!"
+    missing = search_items(st.session_state.items)
     st.session_state.status = "Waiting for next selection"
     if not missing and not st.session_state.emergency_stop:
         st.session_state.msg = msg
 
-# Header with vintage styling
+
 st.title("Robobazaar")
-st.markdown('<p class="subtitle">Automated Fruit & Vegetable Selection System</p>', unsafe_allow_html=True)
+st.header("Choose an Item")
 
-st.markdown("---")
+col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
 
-st.markdown('<h2 class="section-header">Choose a Fruit or Vegetable</h2>', unsafe_allow_html=True)
-
-# 3x3 Button Grid Layout
-st.markdown('<div class="button-grid">', unsafe_allow_html=True)
-
-# Row 1: Green Apple, Kiwi, Tomato
-col1, col2, col3 = st.columns(3)
-with col1:
-    if st.button("Green Apple", key="apple"):
-        prepare_search("green apple")
-with col2:
-    if st.button("Kiwi", key="kiwi"):
-        prepare_search("kiwi")
-with col3:
-    if st.button("Tomato", key="tomato"):
-        prepare_search("Tomato")
-
-# Row 2: Lemon, Strawberry, Carrot
-col4, col5, col6 = st.columns(3)
-with col4:
-    if st.button("Lemon", key="lemon"):
-        prepare_search("Lemon")
-with col5:
-    if st.button("Strawberry", key="strawberry"):
-        prepare_search("strawberry")
-with col6:
-    if st.button("Carrot", key="carrot"):
-        prepare_search("carrot")
-
-# Row 3: Emergency Stop Button (centered and bigger)
-st.markdown('<div style="margin-top: 1.5rem;"></div>', unsafe_allow_html=True)
-col_empty1, col_emergency, col_empty2 = st.columns([1, 2, 1])
-with col_emergency:
-    st.markdown('<div class="emergency-button">', unsafe_allow_html=True)
-    if st.button("EMERGENCY STOP", key="emergency"):
-        emergency_stop()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
+if col1.button("Green apple"):
+    st.session_state.items.append("green apple")
+if col2.button("Kiwi"):
+    st.session_state.items.append("kiwi")
+if col3.button("Tomato"):
+    st.session_state.items.append("Tomato")
+if col4.button("Lemon"):
+    st.session_state.items.append("Lemon")
+if col5.button("Strawberry"):
+    st.session_state.items.append("strawberry")
+if col6.button("Carrot"):
+    st.session_state.items.append("carrot")
+if col7.button("Search"):
+    prepare_search(st.session_state.items)
+if col8.button("EMERGENCY STOP"):
+    emergency_stop()
 
 if st.session_state.msg:
     st.success(st.session_state.msg)
 
-st.markdown("---")
+st.subheader("Live Detection")
+st.session_state.live_container
 
-# Live Detection Section
-st.markdown('<h2 class="section-header">Live Detection Feed</h2>', unsafe_allow_html=True)
-if "live_container" not in st.session_state:
-    st.session_state.live_container = st.empty()
-if "image_placeholder" not in st.session_state:
-    st.session_state.image_placeholder = st.empty()
-
-st.markdown("---")
-
-# Latest Capture Section with card styling
-st.markdown('<h2 class="section-header">Latest Capture</h2>', unsafe_allow_html=True)
+st.text("Last detection")
 if st.session_state.last_capture and os.path.exists(st.session_state.last_capture):
-    st.markdown('<div class="poster-frame">', unsafe_allow_html=True)
     img = Image.open(st.session_state.last_capture)
-    st.image(img, caption="Most Recent Detection", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.image(img, width=300, caption="Latest Capture")
 else:
-    st.info("No image captured yet. Select an item to begin detection.")
+    st.info("No image detected yet.")
 
 del Arm
