@@ -213,6 +213,9 @@ def search_items():
                     found = True
                     break
 
+        if not found:
+            st.session_state.msg = "Not found!"
+        
     arm_move(p_mould, 1000)
     st.session_state.order_items=[]
     return missing
