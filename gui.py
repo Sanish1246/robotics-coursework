@@ -340,13 +340,13 @@ time.sleep(.1)
 # Function to change servo 6 values depending on the situation
 def arm_clamp_block(enable):
     mapping = {
-        "Drop": 15,
-        "Tomato": 112,
-        "Lemon": 98,
+        "Drop": 5,
+        "Tomato": 114,
+        "Lemon": 96,
         "carrot": 145,
-        "green apple": 81,
+        "green apple": 86,
         "kiwi": 100,
-        "strawberry": 137
+        "strawberry": 139
     }
     if enable in mapping:
         Arm.Arm_serial_servo_write(6, mapping[enable], 400)
@@ -497,9 +497,6 @@ def search_items():
                 for detected in labels:
                     # Pick only if needed AND still required
                     if order_counter.get(detected, 0) > 0:
-
-                        # Update UI status
-                        st.session_state.status = f"Last Item Picked: {detected}"
 
                         picked[i] = True
                         order_counter[detected] -= 1
