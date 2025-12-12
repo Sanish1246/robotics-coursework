@@ -26,6 +26,12 @@ In order to install all dependencies for the program, run the following command:
 pip install -r requirements.txt
 ```
 
+If necessary, you may first need to create a virtual environment before installing the dependencies, by running the command
+
+```
+python -m venv venv
+```
+
 ## Starting the application
 
 First, ensure that the robotic arm is switched on.
